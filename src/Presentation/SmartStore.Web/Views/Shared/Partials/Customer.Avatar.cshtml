@@ -1,0 +1,39 @@
+﻿@using SmartStore.Web.Models.Customer;
+@model CustomerAvatarModel
+@{
+    if (!Model.AvatarColor.HasValue())
+    {
+        Model.AvatarColor = "light";
+    }
+}
+
+<div class="@(Model.Large ? "customer-avatar-lg" : "customer-avatar")">
+    @if (Model.LinkUrl.HasValue())
+    {
+        <a class="avatar-link" href="@Model.LinkUrl">@Avatar()</a>
+    }
+    else
+    {
+        @Avatar()
+    }
+</div>
+
+@helper Avatar()
+{
+    var textColor = Model.AvatarColor == "light" ? "text-muted" : "text-light";
+
+    if (Model.PictureUrl.HasValue())
+    {
+        <img class="avatar-img" src="@Model.PictureUrl" title="@Model.UserName" />
+        <span class="avatar-letter d-none bg-@(Model.AvatarColor) @(textColor)" title="@Model.UserName">
+            @Model.AvatarLetter
+        </span>
+    }
+    else
+    {
+        <img class="avatar-img d-none" src="#" title="@Model.UserName" />
+        <span class="avatar-letter bg-@(Model.AvatarColor) @(textColor)" title="@Model.UserName">
+            @Model.AvatarLetter
+        </span>
+    }
+}

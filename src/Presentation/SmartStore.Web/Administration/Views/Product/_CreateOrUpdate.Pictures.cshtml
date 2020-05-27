@@ -1,0 +1,94 @@
+﻿@model ProductModel
+
+@using SmartStore.Admin.Models.Catalog;
+@using SmartStore.Core.Domain.Catalog;
+
+@if (Model.Id > 0)
+{
+	<table class="adminContent mb-5">
+		<tr>
+			<td colspan="2">
+				<div class="admin-config-group">
+					<div class="head">@T("Common.Options")</div>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="adminTitle">
+				@Html.SmartLabelFor(model => model.HasPreviewPicture)
+			</td>
+			<td class="adminData">
+				@Html.EditorFor(model => model.HasPreviewPicture)
+				@Html.ValidationMessageFor(model => model.HasPreviewPicture)
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2">
+				<div class="admin-config-group">
+					<div class="head">@T("Admin.Catalog.Products.Pictures.AddNew")</div>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="adminData wide" colspan="2">
+				@Html.EditorFor(model => model.AddPictureModel.PictureId, new
+				{
+					entityId = Model.Id,
+					entityType = "Product",
+					transientUpload = false,
+					album = "catalog",
+					multifile = true,
+					deleteUrl = Url.Action("ProductPictureDelete", "Product", "Admin"),
+					sortUrl = Url.Action("SortPictures", "Product", "Admin"),
+					entityAssignmentUrl = Url.Action("ProductMediaFilesAdd", "Product", "Admin"),
+					uploadedFiles = Model.ProductMediaFiles as IEnumerable<IMediaFile>
+				})
+				@Html.ValidationMessageFor(model => model.AddPictureModel.PictureId)
+			</td>
+		</tr>
+	</table>
+}
+else
+{
+	<div class="alert alert-danger">
+		@T("Admin.Catalog.Products.Pictures.SaveBeforeEdit")
+	</div>
+}
+
+<script>
+		$(function () {
+
+			// Set MainPictureId for product
+			$(".set-main-picture").on("click", function (e) {
+
+				var el = $(this).closest('.dz-image-preview');
+
+				$.ajax({
+					async: true,
+					cache: false,
+					type: 'POST',
+					url: '@Url.Action("SetMainPictureId", "Product")',
+					data: {
+						pictureId: el.data("media-id"),
+						productId: @Model.Id
+					},
+                    success: function () {
+						/*
+						// Set preview picture. 
+						var elDropzone = $('.fileupload-container');
+						var fileName = el.find(".name").text();
+						var fileSize = el.find(".size").text();
+						var fileUrl = el.find(".dz-image-preview img").attr("src");
+
+						elDropzone.find('.fileupload-filename').html(fileName);
+						elDropzone.find('.fileupload-filesize').html(fileSize);
+						elDropzone.find('.fileupload-thumb').css('background-image', 'url("' + fileUrl + '")');
+						elDropzone.find('.hidden').val(el.data("picture-id")).trigger('change');
+						*/
+					}
+				});
+
+				return false;
+			});
+		});
+</script>

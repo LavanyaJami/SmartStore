@@ -1,0 +1,364 @@
+/// <reference path="../bs4/scss/bootstrap.scss" />
+
+
+/* File Upload
+------------------------------------*/
+
+/*
+ * User Interface Plugin (for single file uploads)
+ *
+ * Based on:
+ * jQuery File Upload UI Plugin CSS 6.3
+ * https://github.com/blueimp/jQuery-File-Upload
+ *
+ * Copyright 2010, Sebastian Tschan
+ * https://blueimp.net
+ *
+ * Licensed under the MIT license:
+ * http://www.opensource.org/licenses/MIT
+ */
+
+.fileupload-container {
+
+	&.dz-highlight .dropzone-container,
+	&.dz-drag-hover .dropzone-container {
+		border-color: $primary !important;
+		background-color: lighten($primary, 50%) !important;
+		pointer-events: none;
+	}
+
+	> .dz-preview {
+		display: none !important;
+	}
+
+	.fu-message {
+		cursor: pointer;
+		font-size: $h5-font-size;
+		font-weight: $font-weight-medium;
+		color: $gray-600;
+	}
+
+	// Compact display.
+	&.compact {
+		.fu-message {
+			font-size: $h6-font-size;
+			font-weight: $font-weight-normal;
+		}
+
+		.dropzone {
+			padding: 10px;
+		}
+
+		.fileupload-buttons .btn {
+			@extend .btn-sm;
+		}
+	}
+
+	// Progress bars.
+	.fileupload-progress:not(.list) {
+		position: absolute;
+		left: 0;
+		bottom: -1px;
+		right: 0;
+
+		.progress {
+			height: 0.25rem;
+			background: transparent;
+			margin: 0;
+			border-radius: 0;
+			border-bottom-left-radius: $input-border-radius;
+			border-bottom-right-radius: $input-border-radius;
+			box-shadow: none;
+
+			.progress-bar {
+				background-color: $primary;
+				transition: width 0.25s ease, background-color 0.25s ease;
+			}
+		}
+
+		&.success {
+			transition-delay: 0.4s;
+		}
+
+		&.success .progress-bar {
+			background-color: $success !important;
+		}
+	}
+}
+
+// Dropzone skinning
+.dropzone-container {
+	border: 2px dashed $gray-400 !important;
+	background: $gray-100 !important;
+	pointer-events: initial !important;
+	transition: all .2s;
+	line-height: 1.2;
+
+	&.fullscreen {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		
+		.fu-message {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 100%;
+		}
+	}
+
+	&.hide {
+		display: none;
+	}
+
+	.dropzone {
+		border: none;
+		background: none;
+		width: 100%;
+		padding: 20px;
+	}
+
+	.fileupload,
+	.fu-message {
+		align-self: center;
+		text-align: center;
+	}
+
+	.dz-preview,
+	.dz-message {
+		display: none;
+	}
+
+	.remove {
+		position: absolute;
+		top: -10px;
+		left: -10px;
+		display: none;
+	}
+
+	.open-upload-summmary {
+		display: none;
+		position: absolute;
+		right: 10px;
+		bottom: 5px;
+	}
+}
+
+
+.fileupload-status {
+	display: none;
+}
+
+.fu-status-sidebar {
+	position: fixed;
+	visibility: visible;
+	bottom: 0;
+	right: 20px;
+	z-index: $zindex-fixed;
+	width: 400px;
+	height: 250px;
+	transform: translate3d(0, 100%, 0) scale(0.85);
+	transition-property: transform;
+	transition-timing-function: cubic-bezier(.21,.57,.2,1.02);
+	transition-duration: 0.4s;
+
+	&.show,
+	&.collapsed {
+		transition-timing-function: cubic-bezier(.13,.66,.08,.96);
+		transition-duration: 0.175s;
+		transform: translate3d(0, 0, 0) scale(1);
+		bottom: 20px;
+	}
+
+	&.collapsed {
+		transform: translate3d(0, 200px, 0) scale(1);
+		bottom: 0;
+	}
+
+	.header {
+		background-color: #18509f;
+		font-size: $font-size-lg;
+		color: #fff;
+		padding: 10px 0;
+	}
+
+	.preview-container {
+		border: 1px solid $gray-400;
+		height: 80%;
+		background: #fff;
+		padding: 10px 0;
+		align-items: start;
+		align-content: start;
+
+		.dz-preview {
+			display: flex;
+		}
+
+		.dz-preview {
+			margin: 0;
+			padding: 5px;
+			width: 100%;
+		}
+
+		.dz-image-preview {
+			border: none !important;
+			cursor: initial;
+			width: 100%;
+			height: auto;
+			background: #fff;
+		}
+	}
+}
+
+.dz-image-preview {
+	margin: 0 10px 10px 0;
+	position: relative;
+	border: 1px solid $gray-400;
+	border-radius: $border-radius-sm;
+	background: $light;
+	display: flex;
+	justify-content: center;
+	cursor: move;
+	width: 150px;
+	height: 150px;
+	overflow: hidden;
+
+	& > img {
+		width: 100%;
+		object-fit: cover;
+		max-width: 150px;
+		max-height: 150px;
+	}
+
+	.fu-preview-overlay {
+		position: absolute;
+		width: 100%;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		visibility: hidden;
+		background-image: linear-gradient($gray-100, $gray-300, $gray-600);
+		transition: opacity 0.3s, visibility 0.1s;
+		opacity: .1;
+		z-index: 1;
+	}
+
+	.toolbar {
+		position: absolute;
+		bottom: 0;
+		min-width: 100%;
+		background-color: $gray-100;
+		visibility: hidden;
+		transition: visibility 0.1s;
+		border-top: 1px solid $gray-500;
+		z-index: 2;
+		cursor: default;
+
+		> .btn {
+			border-radius: 0 !important;
+		}
+	}
+
+	&:hover:not(.sortable-ghost) {
+		border: 1px solid $gray-400;
+
+		.toolbar {
+			visibility: visible;
+		}
+
+		.fu-preview-overlay {
+			visibility: visible;
+			opacity: .5;
+		}
+	}
+
+	&.sortable-ghost .toolbar {
+		visibility: hidden;
+	}
+
+	.main-pic-badge {
+		z-index: 1000;
+		position: absolute;
+		top: 5px;
+		left: 10px;
+	}
+}
+
+.dropzone-container {
+	position: relative;
+	display: flex;
+	flex-wrap: nowrap;
+	border: $input-border-width solid $input-border-color;
+	background-color: $input-bg;
+	border-radius: 5px;
+
+	.fileupload-thumb-stage {
+		position: relative;
+		width: 150px;
+		max-width: 150px;
+		margin: 0.5rem;
+	}
+
+	.fileupload-thumb {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 100%;
+		background-size: contain;
+		background-position: center;
+		background-repeat: no-repeat;
+	}
+
+	.fileupload-controls {
+		flex-grow: 1;
+		padding: 0.5rem 0.5rem;
+	}
+}
+
+.fileupload {
+	.btn.cancel {
+		display: none;
+	}
+		
+	.fileinput-button {
+		position: relative;
+		overflow: hidden;
+	}
+
+	.fileinput-button input {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 100%;
+		margin: 0;
+		padding: 0;
+		border: 0;
+		opacity: 0;
+		direction: ltr;
+		cursor: pointer;
+	}
+}
+
+// DupeFileHandlerDialog
+#duplicate-window {
+	.file-display {
+		border: 1px solid $gray-400;
+
+		.file-info {
+			overflow: hidden; 
+		}
+
+		.file-img {
+			width: 100px;
+			height: 80px;
+			object-fit: cover;
+		}
+
+		.file-date {
+			white-space: nowrap;
+			overflow: hidden;
+		}
+	}
+}

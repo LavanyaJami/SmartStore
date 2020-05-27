@@ -1,0 +1,198 @@
+﻿@model FileUploader
+
+@using SmartStore.Core.Domain.Catalog;
+@using SmartStore.Services.Media;
+
+@{
+	Html.AddScriptParts("~/Content/vendors/dropzone/js/dropzone.js");
+	Html.AddScriptParts("~/Content/vendors/dropzone/js/dropzoneWrapper.js");
+
+	if (!Model.Name.HasValue())
+	{
+		Model.Name = "upload-" + CommonHelper.GenerateRandomInteger();
+	}
+
+	if (!Model.HtmlAttributes.ContainsKey("id"))
+	{
+		Model.Id = Model.Name;
+	}
+}
+
+<div @Html.Attr("class", "dropzone-container", Model.Multifile)>
+
+	<div class="dropzone-target">
+		<div class="fu-message">
+			@if (Model.UploadText.HasValue())
+			{
+				@Model.UploadText
+			}
+			else
+			{
+				@T("FileUploader.Dropzone.Message")
+			}
+		</div>
+
+		<div id="@Model.Name" @Html.Attrs(Model.HtmlAttributes)
+			 data-dialog-url="@Url.Action("DupeFileHandlerDialog", "Media", new { area = "Admin" })"
+			 data-assignment-url="@Model.EntityAssignmentUrl"
+			 data-remove-url="@Model.DeleteUrl"
+			 data-sort-url="@Model.SortUrl"
+			 data-entity-id="@Model.EntityId">
+
+			<input type="hidden" id="@(Model.Id)-file" name="@(Model.Id)-file" />
+			<div class="fileupload-buttons">
+				@{ Html.RenderWidget("file_uploader"); }
+			</div>			
+		</div>
+
+		<a href="#" class="open-upload-summmary">
+			<i class="fa fa-question-circle"></i>
+		</a>
+	</div>
+
+	<button class="btn btn-secondary btn-circle btn-to-danger btn-sm remove@(Model.Compact ? " btn-sm" : "")" @Html.Attr("style", "display: none", Model.ShowRemoveButton)>
+		<i class="far fa-times"></i>
+	</button>
+</div>
+
+@if (Model.Multifile)
+{
+	<div class="fileupload-status">
+		<div class="fileupload-status-summary">
+			<span class="uploaded-file-count">0</span>
+			<span>von</span>
+			<span class="total-file-count">0</span>
+			<span>hochgeladen.</span>
+		</div>
+
+		<div class="erroneous-files d-none">
+			<h6>Nicht hochgeladene Dateien</h6>
+			<div class="file-list">
+				<span>Dateiname</span>
+				<span>Grund</span>
+			</div>
+		</div>
+		<div class="skipped-files d-none">
+			<h6>Übersprungene Dateien</h6>
+			<div class="file-list">
+				<span>Dateiname</span>
+			</div>
+		</div>
+		<div class="renamed-files d-none">
+			<h6>Umbenannte Dateien</h6>
+			<div class="file-list">
+				<span>Dateiname</span>
+			</div>
+		</div>
+		<div class="replaced-files d-none">
+			<h6>Ersetzte Dateien</h6>
+			<div class="file-list">
+				<span>Dateiname</span>
+			</div>
+		</div>
+		<div class="uploaded-files d-none">
+			<h6>Neue Dateien</h6>
+			<div class="file-list">
+				<span>Dateiname</span>
+			</div>
+		</div>
+	</div>
+}
+
+@if (Model.Multifile)
+{
+	// TODO: find a better way!!!
+	var mediaService = EngineContext.Current.Resolve<IMediaService>();
+	var files = Model.UploadedFiles;
+
+	<!-- Placeholder to paste preview container into -->
+	<div id="@Model.PreviewContainerId" class="d-flex flex-wrap preview-container mt-3">
+		@foreach (var file in files)
+		{
+			var previewUrl = mediaService.GetUrl(file.MediaFileId, 0);
+			var fileSize = Prettifier.BytesToString(file.MediaFile.Size);
+			var isMainPic = file.MediaFileId == Model.MainFileId;
+			var entityMediaId = 0;
+
+			if (Model.EntityType.Equals("Product"))
+			{
+				var entityMediaFile = file as ProductMediaFile;
+				entityMediaId = entityMediaFile.Id;
+			}
+
+			<div class="dz-processing dz-image-preview dz-success dz-complete shadow-sm"
+				 data-display-order="@file.DisplayOrder"
+				 data-media-id="@file.MediaFileId"
+				 data-media-name="@file.MediaFile.Name"
+				 data-toggle="tooltip"
+				 data-html="true"
+				 data-placement="top"
+				 title='<div class="text-left px-3"><em>@file.MediaFile.Name</em> <br/> <b>@fileSize</b></div>'
+				 @Html.Attr("data-entity-media-id", entityMediaId.ToString(), entityMediaId != 0)>
+
+				@if (isMainPic)
+				{
+					<span class="main-pic-badge badge badge-success">@T("FileUploader.MultiFiles.MainMediaFile")</span>
+				}
+
+				@FilePreviewTemplate(previewUrl)
+			</div>
+		}
+	</div>
+
+	<div class="file-preview-template d-none">
+		<div class="dz-processing dz-image-preview dz-success dz-complete shadow-sm"
+			 data-toggle="tooltip"
+			 data-html="true"
+			 data-placement="top"
+			 title="">
+			@FilePreviewTemplate("")
+		</div>
+	</div>
+}
+
+@helper FilePreviewTemplate(string previewUrl)
+{
+	<i class="file-icon fa-fw d-none"></i>
+
+	<img data-dz-thumbnail @Html.Attr("src", previewUrl, previewUrl.HasValue()) />
+
+	<div class="fu-preview-overlay"></div>
+
+	<div class="toolbar text-right">
+		<a href="#" class="fu-preview-control set-main-picture btn btn-sm btn-clear-dark btn-no-border btn-action btn-icon" title="@T("FileUploader.Preview.SetMainMedia.Title")">
+			<i class="far fa-eye"></i>
+		</a>
+		<a href="#" class="fu-preview-control delete-entity-picture btn btn-sm btn-clear-dark btn-no-border btn-action btn-icon" title="@T("FileUploader.Preview.DeleteEntityMedia.Title")">
+			<i class="far fa-times"></i>
+		</a>
+	</div>
+
+	<div class="fileupload-progress">
+		<!-- The file progress bar -->
+		<div class="progress">
+			<div class="progress-bar" role="progressbar" style="width: 0%" aria-valuemin="0" aria-valuemax="100"></div>
+		</div>
+	</div>
+}
+
+<script data-origin="FileUploader">
+    $(function () {
+        var elUpload = $("#@Model.Id");
+
+		// Init dropzone
+        elUpload.dropzoneWrapper({
+			onUploading: @Html.Raw(Model.OnUploadingHandlerName.HasValue() ? Model.OnUploadingHandlerName : "null"),
+			onUploadCompleted: @Html.Raw(Model.OnUploadCompletedHandlerName.HasValue() ? Model.OnUploadCompletedHandlerName : "null"),
+			onAborted: @Html.Raw(Model.OnAbortedHandlerName.HasValue() ? Model.OnAbortedHandlerName : "null"),
+			onError: @Html.Raw(Model.OnErrorHandlerName.HasValue() ? Model.OnErrorHandlerName : "null"),
+			onFileRemove: @Html.Raw(Model.OnFileRemoveHandlerName.HasValue() ? Model.OnFileRemoveHandlerName : "null"),
+            onCompleted: @Html.Raw(Model.OnCompletedHandlerName.HasValue() ? Model.OnCompletedHandlerName : "null"),
+			onMediaSelected: @Html.Raw(Model.OnMediaSelectedHandlerName.HasValue() ? Model.OnMediaSelectedHandlerName : "null"),
+            maxFiles: @(Model.Multifile ? 100 : 1),
+            previewContainerId: "@(Model.Multifile ? Model.PreviewContainerId : "")",
+            showRemoveButton: @(Model.ShowRemoveButton ? "true" : "false" ),
+			showRemoveButtonAfterUpload: @(Model.ShowRemoveButtonAfterUpload ? "true" : "false" )
+        });
+    });
+</script>
