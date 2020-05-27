@@ -9,6 +9,8 @@ using System.Threading;
 
 namespace SmartStore.Collections
 {
+
+//sample comment
 	/// <summary>
 	/// A thread-safe data structure that contains multiple values for each key.
 	/// </summary>
